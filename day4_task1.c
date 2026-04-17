@@ -1,20 +1,22 @@
 #include <stdio.h>
+#include <string.h>
 
-// ENUM për statusin
+// ENUM
 enum Status {
     FILLUAR = 1,
     NE_PROGRES,
     PERFUNDUAR
 };
 
-// STRUCT për regjistrim
+// STRUCT
 struct Progress {
+    int id;
     char name[50];
     int score;
     enum Status status;
 };
 
-// Funksion për të printuar statusin
+// Print status
 void printStatus(enum Status s) {
     switch (s) {
         case FILLUAR: printf("Filluar"); break;
@@ -24,7 +26,28 @@ void printStatus(enum Status s) {
     }
 }
 
-// Funksion për raport
+// Analize inteligjente
+void printRecommendation(struct Progress p) {
+    printf(">> Analize: ");
+
+    if (p.score < 50 && p.status != PERFUNDUAR) {
+        printf("Rrezik i larte - progres i ulet dhe jo i perfunduar.\n");
+    }
+    else if (p.score >= 50 && p.score < 80 && p.status == NE_PROGRES) {
+        printf("Ne rruge te mire - vazhdo punen.\n");
+    }
+    else if (p.score >= 80 && p.status == PERFUNDUAR) {
+        printf("Shkelqyeshem - objektivi i arritur!\n");
+    }
+    else if (p.status == FILLUAR) {
+        printf("Vetem i filluar - nevojitet me shume angazhim.\n");
+    }
+    else {
+        printf("Gjendje normale.\n");
+    }
+}
+
+// RAPORT
 void printReport(struct Progress records[], int count) {
 
     if (count == 0) {
@@ -39,51 +62,109 @@ void printReport(struct Progress records[], int count) {
     int min = records[0].score;
 
     for (int i = 0; i < count; i++) {
-
         sum += records[i].score;
 
-        if (records[i].status == PERFUNDUAR) {
+        if (records[i].status == PERFUNDUAR)
             completed++;
-        }
 
-        if (records[i].score > max) {
+        if (records[i].score > max)
             max = records[i].score;
-        }
 
-        if (records[i].score < min) {
+        if (records[i].score < min)
             min = records[i].score;
-        }
     }
 
     float avg = (float)sum / total;
 
     printf("\n===== RAPORT =====\n");
-    printf("Total regjistrime: %d\n", total);
+    printf("Total: %d\n", total);
     printf("Te perfunduara: %d\n", completed);
-    printf("Mesatarja e pikeve: %.2f\n", avg);
+    printf("Mesatarja: %.2f\n", avg);
     printf("Max: %d | Min: %d\n", max, min);
 
-    // Klasifikim me if/else
-    if (avg >= 80) {
+    if (avg >= 80)
         printf("Vleresim: Shume mire\n");
-    } else if (avg >= 50) {
+    else if (avg >= 50)
         printf("Vleresim: Mesatar\n");
-    } else {
+    else
         printf("Vleresim: Duhet permiresim\n");
-    }
 
-    if (completed == total) {
+    if (completed == total)
         printf("Status global: Te gjitha te perfunduara\n");
-    } else if (completed > 0) {
+    else if (completed > 0)
         printf("Status global: Ne progres\n");
-    } else {
+    else
         printf("Status global: Asgje e perfunduar\n");
-    }
 }
 
+// KERKIM
+void searchRecords(struct Progress records[], int count) {
+
+    if (count == 0) {
+        printf("Nuk ka regjistrime.\n");
+        return;
+    }
+
+    int option;
+    printf("\nKerko sipas:\n1. ID\n2. Emrit\nZgjedhja: ");
+    scanf("%d", &option);
+
+    int found = 0;
+
+    if (option == 1) {
+        int id;
+        printf("Shkruaj ID: ");
+        scanf("%d", &id);
+
+        for (int i = 0; i < count; i++) {
+            if (records[i].id == id) {
+                printf("\n--- U gjet ---\n");
+                printf("ID: %d, Emri: %s, Piket: %d, Status: ",
+                       records[i].id,
+                       records[i].name,
+                       records[i].score);
+                printStatus(records[i].status);
+                printf("\n");
+
+                printRecommendation(records[i]);
+                found = 1;
+            }
+        }
+
+    } else if (option == 2) {
+
+        char name[50];
+        printf("Shkruaj emrin: ");
+        scanf("%s", name);
+
+        for (int i = 0; i < count; i++) {
+            if (strcmp(records[i].name, name) == 0) {
+                printf("\n--- U gjet ---\n");
+                printf("ID: %d, Emri: %s, Piket: %d, Status: ",
+                       records[i].id,
+                       records[i].name,
+                       records[i].score);
+                printStatus(records[i].status);
+                printf("\n");
+
+                printRecommendation(records[i]);
+                found = 1;
+            }
+        }
+
+    } else {
+        printf("Zgjedhje e pavlefshme!\n");
+        return;
+    }
+
+    if (!found)
+        printf("Asnje regjistrim nuk u gjet.\n");
+}
+
+// MAIN
 int main() {
 
-    struct Progress records[5]; // kapacitet maksimal
+    struct Progress records[5];
     int count = 0;
     int choice;
 
@@ -92,10 +173,10 @@ int main() {
         printf("\n1. Shto regjistrim\n");
         printf("2. Shfaq te gjitha\n");
         printf("3. Raport\n");
-        printf("4. Dil\n");
+        printf("4. Kerko regjistrim\n");
+        printf("5. Dil\n");
         printf("Zgjedhja: ");
 
-        // Validim input menu
         if (scanf("%d", &choice) != 1) {
             printf("Input i pavlefshem!\n");
             while (getchar() != '\n');
@@ -110,6 +191,8 @@ int main() {
                     break;
                 }
 
+                records[count].id = count + 1;
+
                 printf("Shkruaj emrin: ");
                 scanf("%s", records[count].name);
 
@@ -121,7 +204,6 @@ int main() {
                 printf("1. Filluar\n2. Ne progres\n3. Perfunduar\n");
                 printf("Zgjedhja: ");
 
-                // Validim statusi
                 if (scanf("%d", &statusInput) != 1 ||
                     statusInput < 1 || statusInput > 3) {
                     printf("Status i pavlefshem!\n");
@@ -142,9 +224,10 @@ int main() {
                     break;
                 }
 
-                printf("\n--- Lista e regjistrimeve ---\n");
+                printf("\n--- Lista ---\n");
                 for (int i = 0; i < count; i++) {
-                    printf("Emri: %s, Piket: %d, Status: ",
+                    printf("ID: %d, Emri: %s, Piket: %d, Status: ",
+                           records[i].id,
                            records[i].name,
                            records[i].score);
                     printStatus(records[i].status);
@@ -158,11 +241,15 @@ int main() {
                 break;
 
             case 4:
+                searchRecords(records, count);
+                break;
+
+            case 5:
                 printf("Programi u mbyll.\n");
                 return 0;
 
             default:
-                printf("Zgjedhje e pavlefshme! Provo perseri.\n");
+                printf("Zgjedhje e pavlefshme!\n");
         }
     }
 
